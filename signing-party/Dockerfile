@@ -10,14 +10,3 @@ RUN apt-get update
 RUN apt-get upgrade -y
 
 RUN apt-get install -y signing-party
-
-RUN echo "{PASSWD}" >> /etc/passwd
-RUN echo "{SHADOW}" >> /etc/shadow
-
-RUN mkdir -p /home/{USER}
-
-USER {USER}
-
-ENV HOME {HOME}
-
-VOLUME  ["/home"]

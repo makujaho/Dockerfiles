@@ -1,16 +1,12 @@
 #!/bin/bash
 
-# comment out these two lines and execute...it uses whoami for user
-echo PLEASE READ THE SCRIPT CAREFULLY BEVOR EXECUTING
-exit 1
+if [[ $EUID -eq 0 ]]; then
+   echo "YOU LITTLE PRICK...Start this script without root privs." 1>&2
+   exit 1
+fi
 
-user=$(whoami)
+if [ "$(sudo docker images | grep "$(whoami)/signing" | wc -l)" -eq 0 ]; then
+   sudo docker build -t="$(whoami)/signing" . 
+fi;
 
-passwd=$(grep "${user}" /etc/passwd)
-shadow=$(sudo grep "${user}" /etc/shadow | awk -F: '{for(i=1; i<=NF;i++) { if (i != 2) { printf "%s",$i} if(i != NF) {printf "%s",":" }}}')
-home=$(echo "${passwd}" | awk -F: '{print $6}')
-
-# rewrite shell
-passwd=$(echo "${passwd}" | sed 's/zsh/bash/')
-
-cat Dockerfile.template | sed "s|{PASSWD}|${passwd}|g;s|{USER}|${USER}|g;s|{SHADOW}|${shadow}|;s|{HOME}|${home}|g"
+sudo docker run -v /etc/passwd:/etc/passwd:ro -v /etc/shadow:/etc/shadow:ro -v /etc/group:/etc/group:ro -v /home:/home:rw -u $(whoami) -e "HOME=${HOME}" -t "$(whoami)/signing" $@
