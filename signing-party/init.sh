@@ -9,4 +9,9 @@ if [ "$(sudo docker images | grep "$(whoami)/signing" | wc -l)" -eq 0 ]; then
    sudo docker build -t="$(whoami)/signing" . 
 fi;
 
+if [ $# -lt 1 ]; then
+    echo "Usage: ${0} whoami"
+    exit 1;
+fi
+
 sudo docker run -v /etc/passwd:/etc/passwd:ro -v /etc/shadow:/etc/shadow:ro -v /etc/group:/etc/group:ro -v /home:/home:rw -u $(whoami) -e "HOME=${HOME}" -t "$(whoami)/signing" $@
